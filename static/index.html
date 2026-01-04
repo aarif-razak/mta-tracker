@@ -301,11 +301,128 @@
             filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
             z-index: 1;
         }
+
+        /* About button */
+        .about-btn {
+            position: absolute;
+            top: 1rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .about-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .modal-content p {
+            margin: 0.75rem 0;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .modal-content a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .modal-content a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
         <h1>🚇 NYC Subway Tracker</h1>
+        <button class="about-btn" id="about-btn" title="About this project">ℹ️</button>
         <div class="status-bar">
             <div class="status-item">
                 <span class="status-indicator"></span>
@@ -420,6 +537,25 @@
             </div>
         </div>
     </header>
+
+    <!-- About Modal -->
+    <div class="modal" id="about-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">×</button>
+            <h2>About NYC Subway Tracker</h2>
+            <p><strong>What is this?</strong></p>
+            <p>A real-time visualization of all NYC MTA subway trains, showing their current positions and directions on an interactive map.</p>
+
+            <p><strong>How it works:</strong></p>
+            <p>This app fetches live data from MTA's GTFS-RT feeds every 10 seconds and displays train positions at their next scheduled stops with directional indicators.</p>
+
+            <p><strong>Created by:</strong></p>
+            <p>Built by <strong>Aarif</strong> as a personal project to make NYC subway tracking more accessible and visually intuitive.</p>
+
+            <p><strong>Data Source:</strong></p>
+            <p>All real-time data provided by <a href="https://api.mta.info/" target="_blank">MTA</a>.</p>
+        </div>
+    </div>
 
     <div class="error-banner" id="error-banner">
         <div class="error-icon">⚠️</div>
@@ -810,6 +946,33 @@
 
         // Check health every 30 seconds
         setInterval(checkHealth, 30000);
+
+        // About modal functionality
+        const aboutBtn = document.getElementById('about-btn');
+        const aboutModal = document.getElementById('about-modal');
+        const modalClose = document.getElementById('modal-close');
+
+        aboutBtn.addEventListener('click', () => {
+            aboutModal.classList.add('show');
+        });
+
+        modalClose.addEventListener('click', () => {
+            aboutModal.classList.remove('show');
+        });
+
+        // Close modal when clicking outside
+        aboutModal.addEventListener('click', (e) => {
+            if (e.target === aboutModal) {
+                aboutModal.classList.remove('show');
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && aboutModal.classList.contains('show')) {
+                aboutModal.classList.remove('show');
+            }
+        });
     </script>
 </body>
 </html>
