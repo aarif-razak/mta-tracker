@@ -702,8 +702,16 @@
                 document.getElementById('train-count').textContent = `${data.trains.length} trains`;
                 if (data.last_updated) {
                     const updated = new Date(data.last_updated);
+                    // Format in EST timezone
+                    const estTime = updated.toLocaleTimeString('en-US', {
+                        timeZone: 'America/New_York',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true
+                    });
                     document.getElementById('last-update').textContent =
-                        `Updated: ${updated.toLocaleTimeString()}`;
+                        `Updated: ${estTime} EST • Refreshes every 15s`;
                 }
 
                 // Track existing train IDs
