@@ -847,7 +847,7 @@
                         hour12: true
                     });
                     document.getElementById('last-update').textContent =
-                        `Updated: ${estTime} EST • Refreshes every 15s`;
+                        `Updated: ${estTime} EST • Refreshes every 10s`;
                 }
 
                 // Track existing train IDs
@@ -941,8 +941,8 @@
         updateTrains();
         checkHealth();
 
-        // Update trains every 15 seconds
-        setInterval(updateTrains, 15000);
+        // Update trains every 10 seconds
+        setInterval(updateTrains, 10000);
 
         // Check health every 30 seconds
         setInterval(checkHealth, 30000);
