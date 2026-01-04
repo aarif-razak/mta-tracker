@@ -265,6 +265,28 @@
             }
         }
 
+        /* Info notice banner */
+        .info-notice {
+            background: #3b82f6;
+            color: white;
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.875rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .info-notice .info-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .info-notice .info-message {
+            flex: 1;
+            line-height: 1.4;
+        }
+
         /* Train marker with external arrow */
         .train-marker-container {
             position: relative;
@@ -562,6 +584,13 @@
         <div class="error-message">
             <strong>Data Collection Issue</strong>
             <span id="error-details">Unable to fetch real-time train data. Retrying...</span>
+        </div>
+    </div>
+
+    <div class="info-notice">
+        <div class="info-icon">ℹ️</div>
+        <div class="info-message">
+            <strong>Note:</strong> Data is sourced from MTA and may have quality issues during service changes or reroutes. Arrow directions are calculated estimates and may not always be accurate. Enhanced features like detailed delay indicators are planned for future updates.
         </div>
     </div>
 
