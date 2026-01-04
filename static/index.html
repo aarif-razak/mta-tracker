@@ -691,13 +691,6 @@
             return (toDeg(θ) + 360) % 360; // Normalize to 0-360
         }
 
-        // Convert bearing to compass direction
-        function bearingToDirection(bearing) {
-            const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-            const index = Math.round(bearing / 45) % 8;
-            return directions[index];
-        }
-
         // Custom train icon with directional arrow
         const trainIcon = (route, train) => {
             const color = ROUTE_COLORS[route] || '#667eea';
@@ -890,30 +883,13 @@
                         // Update popup
                         const nextStop = train.stops[train.current_stop_index];
 
-                        // Calculate actual direction from bearing
-                        let directionText = 'Unknown';
-                        if (train.prev_position && train.position) {
-                            const bearing = calculateBearing(
-                                train.prev_position.lat,
-                                train.prev_position.lon,
-                                train.position.lat,
-                                train.position.lon
-                            );
-                            directionText = bearingToDirection(bearing);
-                        } else if (train.position && train.next_position) {
-                            const bearing = calculateBearing(
-                                train.position.lat,
-                                train.position.lon,
-                                train.next_position.lat,
-                                train.next_position.lon
-                            );
-                            directionText = bearingToDirection(bearing);
-                        }
+                        // Use MTA's direction labels
+                        const directionText = train.direction_id === 0 ? 'Uptown/Bronx' : 'Downtown/Brooklyn';
 
                         // Format ETA in EST
                         let etaText = 'N/A';
-                        if (nextStop && nextStop.arrival_time) {
-                            const etaDate = new Date(nextStop.arrival_time * 1000); // Convert Unix timestamp to milliseconds
+                        if (nextStop && nextStop.arrival_timestamp) {
+                            const etaDate = new Date(nextStop.arrival_timestamp * 1000); // Convert Unix timestamp to milliseconds
                             etaText = etaDate.toLocaleTimeString('en-US', {
                                 timeZone: 'America/New_York',
                                 hour: '2-digit',
