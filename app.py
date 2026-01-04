@@ -8,7 +8,7 @@ from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import requests
 import csv
 import json
@@ -287,7 +287,7 @@ def update_train_data():
 
             # Update global state
             train_data['trains'] = all_trains
-            train_data['last_updated'] = datetime.now().isoformat()
+            train_data['last_updated'] = datetime.now(timezone.utc).isoformat()
             train_data['feed_counts'] = feed_counts
 
             # Cache in Redis if available
