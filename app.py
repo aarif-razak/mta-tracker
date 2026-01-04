@@ -132,7 +132,7 @@ def parse_feed(feed_data):
 def extract_train_positions(feed, stops):
     """Extract active train information with positions"""
     trains = []
-    current_time = datetime.now()
+    current_time = datetime.now(timezone.utc)
 
     for entity in feed.entity:
         if entity.HasField('trip_update'):
@@ -165,25 +165,25 @@ def extract_train_positions(feed, stops):
                 }
 
                 if stop_update.HasField('arrival'):
-                    arrival_dt = datetime.fromtimestamp(stop_update.arrival.time)
+                    arrival_dt = datetime.fromtimestamp(stop_update.arrival.time, tz=timezone.utc)
                     stop_info['arrival_time'] = arrival_dt.strftime('%H:%M:%S')
                     stop_info['arrival_timestamp'] = stop_update.arrival.time
 
                 if stop_update.HasField('departure'):
-                    departure_dt = datetime.fromtimestamp(stop_update.departure.time)
+                    departure_dt = datetime.fromtimestamp(stop_update.departure.time, tz=timezone.utc)
                     stop_info['departure_time'] = departure_dt.strftime('%H:%M:%S')
 
                 train_info['stops'].append(stop_info)
 
-                # Determine current/next stop
+                # Determine current/next stop - find first stop with future arrival time
                 if train_info['current_stop_index'] is None:
                     if stop_info['arrival_timestamp']:
                         if arrival_dt > current_time:
                             train_info['current_stop_index'] = idx
 
-            # Set default to first stop if none found
-            if train_info['current_stop_index'] is None and len(train_info['stops']) > 0:
-                train_info['current_stop_index'] = 0
+            # If no future stops found, train may have completed route - skip it
+            if train_info['current_stop_index'] is None:
+                continue  # Skip this train, it has no upcoming stops
 
             # Calculate position and direction
             if train_info['current_stop_index'] is not None:
