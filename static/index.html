@@ -224,6 +224,47 @@
             text-decoration: underline;
         }
 
+        /* Error banner */
+        .error-banner {
+            background: #ef4444;
+            color: white;
+            padding: 1rem 2rem;
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            animation: slideDown 0.3s ease;
+        }
+
+        .error-banner.show {
+            display: flex;
+        }
+
+        .error-banner .error-icon {
+            font-size: 1.5rem;
+        }
+
+        .error-banner .error-message {
+            flex: 1;
+        }
+
+        .error-banner .error-message strong {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
         /* Train marker with external arrow */
         .train-marker-container {
             position: relative;
@@ -379,6 +420,14 @@
             </div>
         </div>
     </header>
+
+    <div class="error-banner" id="error-banner">
+        <div class="error-icon">⚠️</div>
+        <div class="error-message">
+            <strong>Data Collection Issue</strong>
+            <span id="error-details">Unable to fetch real-time train data. Retrying...</span>
+        </div>
+    </div>
 
     <div id="map"></div>
 
@@ -713,12 +762,46 @@
             }
         }
 
+        // Health check function
+        async function checkHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+
+                const errorBanner = document.getElementById('error-banner');
+                const errorDetails = document.getElementById('error-details');
+
+                // Show error if status is not 'ok' or if response is 503
+                if (response.status !== 200 || data.status !== 'ok') {
+                    errorBanner.classList.add('show');
+
+                    if (data.reason) {
+                        errorDetails.textContent = `${data.reason} - Data may be outdated or unavailable`;
+                    } else {
+                        errorDetails.textContent = 'Unable to fetch real-time train data. Retrying...';
+                    }
+                } else {
+                    errorBanner.classList.remove('show');
+                }
+            } catch (error) {
+                // Network error - show banner
+                const errorBanner = document.getElementById('error-banner');
+                const errorDetails = document.getElementById('error-details');
+                errorBanner.classList.add('show');
+                errorDetails.textContent = 'Cannot connect to server. Check your internet connection.';
+            }
+        }
+
         // Initialize
         loadStations();
         updateTrains();
+        checkHealth();
 
-        // Update every 15 seconds
+        // Update trains every 15 seconds
         setInterval(updateTrains, 15000);
+
+        // Check health every 30 seconds
+        setInterval(checkHealth, 30000);
     </script>
 </body>
 </html>
