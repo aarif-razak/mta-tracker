@@ -17,14 +17,6 @@ from logging.handlers import RotatingFileHandler
 import os
 from google.transit import gtfs_realtime_pb2
 
-# Redis import with fallback
-try:
-    import redis
-    REDIS_AVAILABLE = True
-except ImportError:
-    REDIS_AVAILABLE = False
-    print("⚠️  Redis not available - running without cache")
-
 app = Flask(__name__, static_folder='static', static_url_path='')
 
 # Security: Restrict CORS to specific origins in production
@@ -46,39 +38,9 @@ FEED_URLS = {
     '1234567S': "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs"
 }
 STOPS_FILE = "stops.txt"
-UPDATE_INTERVAL = 10  # seconds (testing faster polling)
+UPDATE_INTERVAL = 10  # seconds - how often to poll MTA feeds
 DATA_STALE_THRESHOLD = 60  # seconds - mark health as degraded if data older than this
-PORT = int(os.environ.get('PORT', 5001))  # Use PORT from environment (Heroku/Render) or default to 5001
-
-# Redis Configuration
-REDIS_URL = os.environ.get('REDIS_URL')  # Used by Heroku, Railway, etc.
-REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
-REDIS_PORT = int(os.environ.get('REDIS_PORT', 6379))
-REDIS_TTL = 20  # seconds - cache expiration
-redis_client = None
-
-if REDIS_AVAILABLE:
-    try:
-        # Prefer REDIS_URL if available (Heroku/Railway style)
-        if REDIS_URL:
-            redis_client = redis.from_url(REDIS_URL, decode_responses=True, socket_connect_timeout=2)
-            redis_client.ping()
-            print(f"✓ Connected to Redis via REDIS_URL")
-        else:
-            # Fallback to host/port for local development
-            redis_client = redis.Redis(
-                host=REDIS_HOST,
-                port=REDIS_PORT,
-                db=0,
-                decode_responses=True,
-                socket_connect_timeout=2
-            )
-            redis_client.ping()
-            print(f"✓ Connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
-    except Exception as e:
-        print(f"⚠️  Could not connect to Redis: {e}")
-        print("   Continuing without cache...")
-        redis_client = None
+PORT = int(os.environ.get('PORT', 5001))  # Use PORT from environment (Fly.io) or default to 5001
 
 # Structured Logging Setup
 log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
@@ -290,18 +252,6 @@ def update_train_data():
             train_data['last_updated'] = datetime.now(timezone.utc).isoformat()
             train_data['feed_counts'] = feed_counts
 
-            # Cache in Redis if available
-            if redis_client:
-                try:
-                    redis_client.setex(
-                        'train_data',
-                        REDIS_TTL,
-                        json.dumps(train_data)
-                    )
-                    app.logger.debug(f"Cached train data in Redis (TTL: {REDIS_TTL}s)")
-                except Exception as e:
-                    app.logger.warning(f"Failed to cache in Redis: {e}")
-
             app.logger.info(f"Total: {len(all_trains)} active trains across all lines")
 
         except Exception as e:
@@ -319,17 +269,6 @@ def index():
 @app.route('/api/trains')
 def get_trains():
     """API endpoint to get current train data"""
-    # Try Redis cache first
-    if redis_client:
-        try:
-            cached_data = redis_client.get('train_data')
-            if cached_data:
-                app.logger.debug(f"Serving train data from Redis cache (client: {request.remote_addr})")
-                return jsonify(json.loads(cached_data))
-        except Exception as e:
-            app.logger.warning(f"Failed to read from Redis: {e}")
-
-    # Fallback to in-memory data
     app.logger.debug(f"Serving train data from memory (client: {request.remote_addr})")
     return jsonify(train_data)
 
@@ -382,7 +321,6 @@ def health():
         'status': status,
         'last_updated': last_update,
         'active_trains': active_trains,
-        'redis_connected': redis_client is not None,
         'feed_counts': train_data.get('feed_counts', {}),
         'hello': "world"
     }
