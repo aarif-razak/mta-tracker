@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: mta-tracker
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: FLASK_DEBUG
+        value: "False"
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: PYTHON_VERSION
+        value: "3.11.7"
+    healthCheckPath: /api/health
