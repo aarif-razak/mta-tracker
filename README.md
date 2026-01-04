@@ -109,6 +109,30 @@ Available feeds: https://api.mta.info/#/subwayRealTimeFeeds
 5. **Position & Direction**: Trains are positioned at their next scheduled stop with directional arrows
 6. **Minimalist Design**: Uses CartoDB Positron tiles for a clean, distraction-free map
 
+## Deployment
+
+Deploy to Fly.io (free tier, no sleep):
+
+```bash
+# Install Fly CLI
+brew install flyctl
+
+# Login
+flyctl auth login
+
+# Deploy from project directory
+flyctl launch
+
+# Follow prompts (choose app name, region)
+# Then deployment starts automatically
+
+# For future updates
+git push
+flyctl deploy
+```
+
+Your app will be live at: `https://your-app-name.fly.dev`
+
 ## License
 
 MIT

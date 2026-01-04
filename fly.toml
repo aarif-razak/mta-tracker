@@ -1,0 +1,32 @@
+# fly.toml app configuration file generated for mta-tracker
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+app = "mta-tracker"
+primary_region = "sea"
+
+[build]
+  builder = "paketobuildpacks/builder:base"
+  buildpacks = ["gcr.io/paketo-buildpacks/python"]
+
+[env]
+  PORT = "8080"
+  FLASK_DEBUG = "False"
+  LOG_LEVEL = "INFO"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
