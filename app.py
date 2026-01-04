@@ -364,7 +364,7 @@ def health():
     if last_update:
         try:
             last_update_dt = datetime.fromisoformat(last_update)
-            age_seconds = (datetime.now() - last_update_dt).total_seconds()
+            age_seconds = (datetime.now(timezone.utc) - last_update_dt).total_seconds()
 
             if age_seconds > DATA_STALE_THRESHOLD:
                 status = 'degraded'
